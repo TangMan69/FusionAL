@@ -1,7 +1,7 @@
-fastapi==0.128.0
-uvicorn[standard]==0.40.0
-pydantic==2.12.0
-openai==2.17.0
-python-dotenv==1.2.1
-requests==2.31.0
-anthropic==0.38.0
+fastapi>=0.128.0
+uvicorn[standard]>=0.40.0
+pydantic>=2.12.0
+openai>=2.17.0
+python-dotenv>=1.2.1
+requests>=2.31.0
+anthropic>=0.38.0

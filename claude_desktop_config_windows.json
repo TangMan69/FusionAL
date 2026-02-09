@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "fusional-gateway": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "-v", "/var/run/docker.sock:/var/run/docker.sock",
+        "-v", "%USERPROFILE%\\.docker\\mcp:/mcp",
+        "fusional",
+        "--catalog=/mcp/catalogs/docker-mcp.yaml",
+        "--catalog=/mcp/catalogs/custom.yaml",
+        "--config=/mcp/config.yaml",
+        "--registry=/mcp/registry.yaml",
+        "--transport=stdio"
+      ]
+    }
+  }
+}

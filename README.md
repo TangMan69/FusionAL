@@ -206,16 +206,26 @@ if __name__ == "__main__":
 
 ### Built-in Examples
 
-- **Dice Roller** (`examples/dice-roller/`) - D&D dice rolling suite
+1. **Dice Roller** (`examples/dice-roller/`) - D&D dice rolling suite (8 tools)
+   - Roll standard dice, custom dice, stats, advantage/disadvantage rolls
+   - Demonstrates: Dice notation parsing, utility functions
+
+2. **Weather API** (`examples/weather-api/`) - Real-time weather information
+   - Get current weather, multi-day forecasts, parse weather data
+   - Demonstrates: External API integration, error handling
+
+3. **File Utilities** (`examples/file-utils/`) - File system operations
+   - Count lines, get file info, search text, list files
+   - Demonstrates: Safe filesystem access, pagination, permissions handling
 
 ### Generating More Examples
 
 Use the AI agent to generate servers for:
-- Weather forecasting
 - Task tracking (Todoist, Toggl integration)
-- Web scraping
-- File operations
-- API integrations
+- Web scraping with BeautifulSoup
+- Database queries (PostgreSQL, MongoDB)
+- API integrations (GitHub, Slack, Stripe)
+- Code analysis and linting
 - Automation workflows
 
 ---

@@ -107,7 +107,7 @@ def main():
         print("🎉 FusionAL is ready! Next steps:")
         print("   1. cd core")
         print("   2. python -m uvicorn main:app --reload")
-        print("   3. Visit http://localhost:8000/docs")
+        print("   3. Visit http://localhost:8001/docs")
         return 0
     else:
         print("⚠️  Please fix the above issues and try again")

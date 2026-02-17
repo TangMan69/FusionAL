@@ -47,7 +47,7 @@ pip install -r core/requirements.txt
 ```bash
 # From the core directory
 cd core
-python -m uvicorn main:app --reload --port 8000
+python -m uvicorn main:app --reload --port 8089
 ```
 
 ### Step 3: Build Example (Dice Roller)
@@ -237,7 +237,7 @@ Use the AI agent to generate servers for:
 Execute Python code with optional Docker sandboxing.
 
 ```bash
-curl -X POST http://localhost:8000/execute \
+curl -X POST http://localhost:8089/execute \
   -H "Content-Type: application/json" \
   -d '{
     "language": "python",
@@ -253,7 +253,7 @@ curl -X POST http://localhost:8000/execute \
 Register a new MCP server.
 
 ```bash
-curl -X POST http://localhost:8000/register \
+curl -X POST http://localhost:8089/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "dice-roller",
@@ -268,7 +268,7 @@ curl -X POST http://localhost:8000/register \
 List all registered MCP servers.
 
 ```bash
-curl http://localhost:8000/catalog
+curl http://localhost:8089/catalog
 ```
 
 ### GET /health
@@ -276,7 +276,7 @@ curl http://localhost:8000/catalog
 Health check.
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8089/health
 ```
 
 ---
@@ -306,7 +306,7 @@ curl http://localhost:8000/health
 
 ```bash
 cd core
-python -m uvicorn main:app --reload --port 8000
+python -m uvicorn main:app --reload --port 8089
 ```
 
 ### Production (Docker)
@@ -316,15 +316,15 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY core/ .
 RUN pip install -r requirements.txt
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8089
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8089"]
 ```
 
 Build and run:
 
 ```bash
 docker build -t fusional-server .
-docker run -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock fusional-server
+docker run -p 8089:8089 -v /var/run/docker.sock:/var/run/docker.sock fusional-server
 ```
 
 ---

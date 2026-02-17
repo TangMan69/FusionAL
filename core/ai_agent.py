@@ -17,7 +17,7 @@ import re
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8000")
+SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8089")
 
 if OPENAI_API_KEY:
     openai.api_key = OPENAI_API_KEY

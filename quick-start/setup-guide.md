@@ -29,12 +29,12 @@ pip install -r core/requirements.txt
 
 ```bash
 cd core
-python -m uvicorn main:app --reload --port 8001
+python -m uvicorn main:app --reload --port 8009
 ```
 
 You should see:
 ```
-INFO:     Uvicorn running on http://127.0.0.1:8001
+INFO:     Uvicorn running on http://127.0.0.1:8009
 ```
 
 ## Step 3: Build Example Server (1 minute)

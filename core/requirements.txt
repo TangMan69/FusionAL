@@ -5,3 +5,4 @@ openai==2.20.0
 python-dotenv==1.2.1
 requests==2.32.5
 anthropic==0.79.0
+redis

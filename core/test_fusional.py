@@ -8,7 +8,7 @@ Run this after starting the FastAPI server with: uvicorn main:app --reload --por
 import requests
 import json
 
-SERVER_URL = "http://localhost:8001"
+SERVER_URL = "http://localhost:8009"
 
 
 def test_health():

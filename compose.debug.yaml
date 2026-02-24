@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn core.main:app --host 0.0.0.0 --port 8001"]
+    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn core.main:app --host 0.0.0.0 --port 8009"]
     ports:
-      - 8001:8001
+      - 8009:8009
       - 5678:5678

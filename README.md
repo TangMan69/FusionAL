@@ -70,7 +70,7 @@ Add the FusionAL gateway:
 {
   "mcpServers": {
     "fusional-gateway": {
-      "command": "docker",
+      "command": "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
       "args": [
         "run", "-i", "--rm",
         "-v", "/var/run/docker.sock:/var/run/docker.sock",

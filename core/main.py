@@ -32,7 +32,14 @@ LOGGER = logging.getLogger("fusional.main")
 # --- Security module: cross-platform path resolution ---
 _this_file = Path(__file__).resolve()
 _SECURITY_CANDIDATES = [
-    _this_file.parent / "common",
+_SECURITY_CANDIDATES = [
+    Path(__file__).resolve().parent,
+    Path(__file__).resolve().parents[2] / "mcp-consulting-kit" / "showcase-servers" / "common",
+    Path(__file__).resolve().parent / "common",
+    Path.home() / "Projects" / "mcp-consulting-kit" / "showcase-servers" / "common",
+    Path.home() / "projects" / "mcp-consulting-kit" / "showcase-servers" / "common",
+    Path.home() / "mcp-consulting-kit" / "showcase-servers" / "common",
+]
     Path.home() / "Projects" / "mcp-consulting-kit" / "showcase-servers" / "common",
     Path.home() / "projects" / "mcp-consulting-kit" / "showcase-servers" / "common",
     Path.home() / "mcp-consulting-kit" / "showcase-servers" / "common",

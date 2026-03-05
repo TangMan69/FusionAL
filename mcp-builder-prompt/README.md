@@ -75,4 +75,4 @@ async def my_tool(param: str = "") -> str:
 ```
 
 For complete builder prompt with examples, see:
-https://github.com/TangMan69/docker-mcp-tutorial/blob/main/mcp-builder-prompt/mcp-builder-prompt.md
+https://github.com/JonathanMelton-FusionAL/docker-mcp-tutorial/blob/main/mcp-builder-prompt/mcp-builder-prompt.md

@@ -13,7 +13,7 @@ Get your first MCP server running in under 5 minutes!
 
 ```bash
 # Clone repository
-git clone https://github.com/TangMan69/FusionAL.git
+git clone https://github.com/JonathanMelton-FusionAL/FusionAL.git
 cd FusionAL
 
 # Create virtual environment

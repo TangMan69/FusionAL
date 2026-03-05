@@ -4,7 +4,7 @@
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)
 ![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-orange)
-![Stars](https://img.shields.io/github/stars/TangMan69/FusionAL?style=social)
+![Stars](https://img.shields.io/github/stars/JonathanMelton-FusionAL/FusionAL?style=social)
 
 A privacy-first, self-hosted **Model Context Protocol (MCP) governance gateway** for teams that need auditability, policy controls, and reliable operations across AI toolchains.
 
@@ -52,7 +52,7 @@ If you need implementation support, current consulting focus is MCP governance r
 ### Step 1: Clone & Setup
 
 ```bash
-git clone https://github.com/TangMan69/FusionAL.git
+git clone https://github.com/JonathanMelton-FusionAL/FusionAL.git
 cd FusionAL
 
 # Create virtual environment
@@ -68,7 +68,7 @@ pip install -r core/requirements.txt
 ```bash
 # From the core directory
 cd core
-python -m uvicorn main:app --reload --port 8089
+python -m uvicorn main:app --reload --port 8009
 ```
 
 ### Step 2b: Attach FusionAL to VS Code Debugger
@@ -268,7 +268,7 @@ Use the AI agent to generate servers for:
 Execute Python code with optional Docker sandboxing.
 
 ```bash
-curl -X POST http://localhost:8089/execute \
+curl -X POST http://localhost:8009/execute \
   -H "Content-Type: application/json" \
   -d '{
     "language": "python",
@@ -284,7 +284,7 @@ curl -X POST http://localhost:8089/execute \
 Register a new MCP server.
 
 ```bash
-curl -X POST http://localhost:8089/register \
+curl -X POST http://localhost:8009/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "dice-roller",
@@ -299,7 +299,7 @@ curl -X POST http://localhost:8089/register \
 List all registered MCP servers.
 
 ```bash
-curl http://localhost:8089/catalog
+curl http://localhost:8009/catalog
 ```
 
 ### GET /health
@@ -307,7 +307,7 @@ curl http://localhost:8089/catalog
 Health check.
 
 ```bash
-curl http://localhost:8089/health
+curl http://localhost:8009/health
 ```
 
 ---
@@ -337,7 +337,7 @@ curl http://localhost:8089/health
 
 ```bash
 cd core
-python -m uvicorn main:app --reload --port 8089
+python -m uvicorn main:app --reload --port 8009
 ```
 
 ### Production (Docker)
@@ -347,15 +347,15 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY core/ .
 RUN pip install -r requirements.txt
-EXPOSE 8089
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8089"]
+EXPOSE 8009
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8009"]
 ```
 
 Build and run:
 
 ```bash
 docker build -t fusional-server .
-docker run -p 8089:8089 -v /var/run/docker.sock:/var/run/docker.sock fusional-server
+docker run -p 8009:8009 -v /var/run/docker.sock:/var/run/docker.sock fusional-server
 ```
 
 ---
@@ -364,8 +364,6 @@ docker run -p 8089:8089 -v /var/run/docker.sock:/var/run/docker.sock fusional-se
 
 - [Quick Start Guide](quick-start/setup-guide.md)
 - [Building Custom Servers](docs/custom-servers.md)
-- [Docker MCP Gateway Architecture](docs/docker-gateway.md)
-- [Troubleshooting](docs/troubleshooting.md)
 
 ---
 
@@ -398,7 +396,7 @@ MIT License - see [LICENSE](LICENSE)
 
 ## ☕ Support
 
-- 🐛 Found a bug? [Open an issue](https://github.com/TangMan69/FusionAL/issues)
+- 🐛 Found a bug? [Open an issue](https://github.com/JonathanMelton-FusionAL/FusionAL/issues)
 - 💡 Have an idea? Submit a discussion
 - ⭐ Like it? Star the repo!
 

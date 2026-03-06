@@ -14,7 +14,7 @@ Thanks for your interest in improving FusionAL.
    - `pip install -r core/requirements.txt`
 4. Run the API locally:
    - `cd core`
-   - `python -m uvicorn main:app --reload --port 8089`
+   - `python -m uvicorn main:app --reload --port 8009`
 
 ## Branch and PR Workflow
 

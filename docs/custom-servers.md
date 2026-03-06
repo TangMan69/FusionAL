@@ -40,7 +40,7 @@ cd weather-mcp
 docker build -t weather-mcp .
 
 # Register with FusionAL
-curl -X POST http://localhost:8000/register \
+curl -X POST http://localhost:8009/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "weather",
@@ -268,7 +268,7 @@ docker run -it \
   weather-mcp
 
 # Register
-curl -X POST http://localhost:8000/register \
+curl -X POST http://localhost:8009/register \
   -d '{"name": "weather", "description": "Weather Tool"}'
 ```
 
@@ -311,7 +311,7 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | python weather_server.py
 
 ### In Claude
 
-1. Register server: `curl -X POST http://localhost:8000/register ...`
+1. Register server: `curl -X POST http://localhost:8009/register ...`
 2. Restart Claude Desktop
 3. Try: _"Get weather for London"_
 

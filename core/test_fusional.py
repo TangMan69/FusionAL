@@ -2,7 +2,7 @@
 FusionAL Test Script
 
 Simple tests to verify FusionAL is working correctly.
-Run this after starting the FastAPI server with: uvicorn main:app --reload --port 8000
+Run this after starting the FastAPI server with: uvicorn main:app --reload --port 8009
 """
 
 import requests

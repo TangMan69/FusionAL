@@ -17,7 +17,7 @@ import re
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8089")
+SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8009")
 
 # Model selection — override via env vars to swap models without code changes
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")

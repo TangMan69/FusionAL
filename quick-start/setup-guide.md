@@ -137,7 +137,7 @@ print('Built image:', result['build_result']['image_tag'])
 ### Register New Server
 
 ```bash
-curl -X POST http://localhost:8000/register \
+curl -X POST http://localhost:8009/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "dice-roller",
@@ -150,7 +150,7 @@ curl -X POST http://localhost:8000/register \
 ### Test Code Execution
 
 ```bash
-curl -X POST http://localhost:8000/execute \
+curl -X POST http://localhost:8009/execute \
   -H "Content-Type: application/json" \
   -d '{
     "code": "print(\"Hello from FusionAL!\")\nprint(2 + 2)",
@@ -172,7 +172,7 @@ curl -X POST http://localhost:8000/execute \
 - Restart Claude Desktop completely
 
 ### "Connection refused"
-- Verify FusionAL server running: `curl http://localhost:8000/health`
+- Verify FusionAL server running: `curl http://localhost:8009/health`
 - Check port 8000 isn't in use
 
 ### "Permission error"

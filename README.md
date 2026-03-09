@@ -4,7 +4,9 @@
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)
 ![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-orange)
-![Stars](https://img.shields.io/github/stars/JonathanMelton-FusionAL/FusionAL?style=social)
+
+> **Deploy governed MCP in weeks, not quarters.**  
+> 🌐 [**fusional.dev**](https://fusional.dev) • 📧 [jonathanmelton.fusional@gmail.com](mailto:jonathanmelton.fusional@gmail.com) • 🗓️ [Book Call](https://calendly.com/jonathanmelton004/30min)
 
 A privacy-first, self-hosted **Model Context Protocol (MCP) governance gateway** for teams that need auditability, policy controls, and reliable operations across AI toolchains — without a dedicated platform engineering department.
 
@@ -46,7 +48,7 @@ FusionAL provides a governance control layer for MCP operations:
 - **Enterprise services**: MCP operations pilots, security audits, managed governance
 - **Done-for-you**: architecture, rollout, and ongoing managed ops for production MCP deployments
 
-If you need implementation support, see the [MCP Consulting Kit](https://github.com/JonathanMelton-FusionAL/FusionAL-mcp-consulting-kit) or book a call: [calendly.com/jonathanmelton004/30min](https://calendly.com/jonathanmelton004/30min)
+If you need implementation support, see **[fusional.dev](https://fusional.dev)** for done-for-you MCP deployments or book a call: [calendly.com/jonathanmelton004/30min](https://calendly.com/jonathanmelton004/30min)
 
 ---
 

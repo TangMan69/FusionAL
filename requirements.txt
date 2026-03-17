@@ -1,15 +1,15 @@
-# FusionAL Core — requirements.txt
-# Python 3.14 | Last updated: 2026-02-27
+# FusionAL Core - requirements.txt
+# Python 3.14 | Last updated: 2026-03-12
 
 fastapi==0.135.1
 uvicorn[standard]==0.41.0
 python-dotenv==1.2.2
 anthropic==0.84.0
 pydantic==2.12.5
-redis==7.2.1
+redis==7.3.0
 requests==2.32.5
 httpx==0.28.1
-openai==2.20.0
+openai==2.26.0
 mcp[cli]==1.26.0
 
 # Tracing (OpenTelemetry)

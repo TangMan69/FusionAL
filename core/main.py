@@ -12,13 +12,16 @@ import os
 import sys
 import json
 import logging
+import re
+import socket
 import shutil
 import subprocess  # nosec B404
 import tempfile
+import time
 from datetime import datetime
 from pathlib import Path
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
@@ -75,6 +78,7 @@ except Exception:
 
 # --- MCP transport ---
 from .mcp_transport import mcp
+from .ai_agent import generate_python_from_claude, generate_python_from_openai
 
 
 @asynccontextmanager
@@ -136,6 +140,11 @@ class RegisterRequest(BaseModel):
     metadata: Optional[dict] = None
 
 
+class GenerateRequest(BaseModel):
+    prompt: str
+    sandbox: bool = True
+
+
 # ── Registry ──────────────────────────────────────────────────────────────────
 
 REGISTRY: dict = {}
@@ -183,6 +192,85 @@ def _save_registry():
 
 
 _load_registry()
+
+
+def _slugify_server_name(prompt: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", prompt.lower()).strip("-")
+    if not slug:
+        slug = "generated-server"
+    if not slug.endswith("-mcp"):
+        slug = f"{slug}-mcp"
+    return slug[:80]
+
+
+def _find_available_port(start: int = 8200, end: int = 8299) -> int:
+    for port in range(start, end + 1):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            in_use = sock.connect_ex(("127.0.0.1", port)) == 0
+            if not in_use:
+                return port
+    raise RuntimeError(f"No available ports in range {start}-{end}")
+
+
+def _extract_tools_from_code(code: str) -> List[str]:
+    tools: List[str] = []
+    for match in re.finditer(r"@mcp\\.tool\\((.*?)\\)", code, flags=re.DOTALL):
+        args_text = match.group(1)
+        name_match = re.search(r"name\\s*=\\s*[\"']([^\"']+)[\"']", args_text)
+        if name_match:
+            tools.append(name_match.group(1))
+
+    if tools:
+        return sorted(set(tools))
+
+    for match in re.finditer(r"def\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(", code):
+        fn_name = match.group(1)
+        if not fn_name.startswith("_"):
+            tools.append(fn_name)
+
+    return sorted(set(tools))[:20]
+
+
+def _generate_local_server_code(server_name: str, user_request: str) -> str:
+    safe_name = re.sub(r"[^a-zA-Z0-9_]", "_", server_name)[:48] or "generated_mcp"
+    escaped_request = user_request.replace('"', '\\"')
+    return f'''"""Auto-generated local MCP server fallback for {server_name}."""
+
+import os
+from datetime import datetime
+
+from fastapi import FastAPI
+from mcp.server.fastmcp import FastMCP
+import uvicorn
+
+mcp = FastMCP("{safe_name}", streamable_http_path="/")
+
+
+@mcp.tool(name="ping", description="Health-check tool that returns pong with context")
+def ping() -> dict:
+    return {{"message": "pong", "server": "{server_name}", "request": "{escaped_request}"}}
+
+
+@mcp.tool(name="echo", description="Echoes back provided text")
+def echo(text: str) -> dict:
+    return {{"echo": text, "server": "{server_name}"}}
+
+
+app = FastAPI(title="{server_name}")
+
+
+@app.get("/health")
+async def health() -> dict:
+    return {{"status": "ok", "server": "{server_name}", "timestamp": datetime.utcnow().isoformat()}}
+
+
+app.mount("/mcp", mcp.streamable_http_app())
+
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", "8200"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+'''
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -234,3 +322,107 @@ async def register(req: RegisterRequest, _auth_dep=Depends(_auth), _rate_dep=Dep
 @app.get("/catalog")
 async def catalog():
     return {"total": len(REGISTRY), "servers": REGISTRY, "timestamp": datetime.utcnow().isoformat()}
+
+
+@app.post("/generate")
+async def generate(req: GenerateRequest, _auth_dep=Depends(_auth), _rate_dep=Depends(_rate)):
+    try:
+        server_name = _slugify_server_name(req.prompt)
+        if server_name in REGISTRY:
+            server_name = f"{server_name}-{int(time.time())}"
+
+        generation_prompt = (
+            "Generate complete Python MCP server code in one file. "
+            "Requirements: use FastMCP streamable HTTP transport mounted at /mcp, expose GET /health, "
+            "read port from PORT env var with default 8200, and include at least one useful tool. "
+            "Return only valid Python code with no markdown fences.\n\n"
+            f"Server name: {server_name}\n"
+            f"User request: {req.prompt}"
+        )
+
+        generated_code = None
+        provider_used = "local"
+        provider_errors: List[str] = []
+
+        if os.getenv("ANTHROPIC_API_KEY"):
+            try:
+                generated_code = generate_python_from_claude(generation_prompt)
+                provider_used = "anthropic"
+            except Exception as exc:
+                provider_errors.append(f"anthropic: {exc}")
+
+        if generated_code is None and os.getenv("OPENAI_API_KEY"):
+            try:
+                generated_code = generate_python_from_openai(generation_prompt)
+                provider_used = "openai"
+            except Exception as exc:
+                provider_errors.append(f"openai: {exc}")
+
+        if generated_code is None:
+            generated_code = _generate_local_server_code(server_name, req.prompt)
+            if provider_errors:
+                LOGGER.warning(
+                    "AI provider generation failed, falling back to local template: %s",
+                    " | ".join(provider_errors),
+                )
+
+        generated_code = generated_code.strip()
+        if generated_code.startswith("```"):
+            generated_code = re.sub(r"^```[a-zA-Z]*\\n", "", generated_code)
+            generated_code = re.sub(r"\\n```$", "", generated_code)
+
+        tools = _extract_tools_from_code(generated_code)
+        port = _find_available_port(8200, 8299)
+
+        tmpdir = tempfile.mkdtemp(prefix=f"{server_name}-")
+        script_path = os.path.join(tmpdir, "generated_server.py")
+        with open(script_path, "w", encoding="utf-8") as f:
+            f.write(generated_code)
+
+        env = os.environ.copy()
+        env["PORT"] = str(port)
+        env["FUSIONAL_GENERATED_SERVER"] = server_name
+
+        proc = subprocess.Popen(  # nosec B603
+            [sys.executable, script_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env,
+            cwd=tmpdir,
+        )
+
+        time.sleep(2)
+        startup_logs = ""
+        if proc.poll() is not None:
+            out, err = proc.communicate(timeout=2)
+            startup_logs = (out or "") + ("\n" + err if err else "")
+            raise RuntimeError(f"Generated server exited early with code {proc.returncode}. {startup_logs}")
+
+        startup_logs = f"Generated server started with PID {proc.pid} on port {port}"
+
+        REGISTRY[server_name] = {
+            "description": req.prompt,
+            "url": f"http://localhost:{port}",
+            "metadata": {
+                "tools": tools,
+                "port": port,
+                "pid": proc.pid,
+                "sandbox": req.sandbox,
+                "source": "generated",
+                "script_path": script_path,
+            },
+            "registered_at": datetime.utcnow().isoformat(),
+        }
+        _save_registry()
+
+        return {
+            "status": "success",
+            "server_name": server_name,
+            "port": port,
+            "tools": tools,
+            "provider": provider_used,
+            "logs": startup_logs,
+        }
+    except Exception as exc:
+        return {"status": "error", "error": str(exc)}

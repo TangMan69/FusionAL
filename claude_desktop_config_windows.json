@@ -2,7 +2,7 @@
   "mcpServers": {
     "fusional-gateway": {
       "_comment": "Use url: http://localhost:8009/sse for local uvicorn",
-      "url": "http://localhost:8089/sse"
+      "url": "http://localhost:8009/sse"
     }
   }
 }

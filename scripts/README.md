@@ -36,3 +36,20 @@ Notes:
 - Both scripts back up the existing `core/mcp_registry.json` to `core/mcp_registry.json.bak`.
 - They create registry entries with URLs of the form `docker://<container_name>`.
 - You can then edit `core/mcp_registry.json` to add tool metadata or more descriptive text.
+
+3) `smoke-generate-endpoint.ps1` (PowerShell)
+
+- Smoke-tests the FusionAL `POST /generate` endpoint end-to-end.
+- Calls `/generate`, extracts the returned port, then verifies the generated server responds on `/health`.
+- Uses `-ApiKey` if provided, otherwise falls back to `API_KEY` or `FUSIONAL_API_KEY` env vars.
+
+```powershell
+# basic run (requires FusionAL core running locally)
+.\scripts\smoke-generate-endpoint.ps1
+
+# custom prompt
+.\scripts\smoke-generate-endpoint.ps1 -Prompt "Create an MCP server that converts markdown to HTML"
+
+# custom API endpoint + key
+.\scripts\smoke-generate-endpoint.ps1 -BaseUrl "http://localhost:8009" -ApiKey "your-api-key"
+```

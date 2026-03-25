@@ -42,6 +42,14 @@ console = Console()
 # Maps Registry page_id -> consecutive health-check failure count
 failure_counts: dict[str, int] = {}
 
+# Fix 1: Registry name -> page_id cache (populated at startup, avoids per-incident API call)
+registry_id_cache: dict[str, str] = {}
+
+# Fix 2: Maps Registry page_id -> last incident creation time (unix float)
+# Re-opens an incident after INCIDENT_REOPEN_INTERVAL if server stays down
+last_incident_time: dict[str, float] = {}
+INCIDENT_REOPEN_INTERVAL: int = int(os.getenv("INCIDENT_REOPEN_INTERVAL", "1800"))  # 30 min
+
 
 # ── Utilities ────────────────────────────────────────────────────────────────
 
@@ -199,8 +207,9 @@ def _process_build(notion: NotionClient, http: httpx.Client, page: dict) -> None
             console.print(f"[yellow][BUILD] Warning — could not write output to Build Queue: {exc}[/yellow]")
 
         # Create Registry entry
+        registry_page_id: Optional[str] = None
         try:
-            notion_call(
+            registry_page = notion_call(
                 notion.pages.create,
                 parent={"database_id": REGISTRY_ID},
                 properties={
@@ -211,12 +220,29 @@ def _process_build(notion: NotionClient, http: httpx.Client, page: dict) -> None
                     "Last Updated": {"date": {"start": now_iso()}},
                 },
             )
+            registry_page_id = registry_page["id"]
             console.print(
                 f"[bold green][BUILD][/bold green] Complete: "
                 f"[bold]{server_name}[/bold] on port {port} added to Registry."
             )
         except Exception as exc:
             console.print(f"[yellow][BUILD] Warning — could not create Registry entry: {exc}[/yellow]")
+
+        # Link Build Queue → Registry via "Resulting MCP" relation
+        if registry_page_id:
+            try:
+                notion_call(
+                    notion.pages.update,
+                    page_id=page_id,
+                    properties={
+                        "Resulting MCP": {"relation": [{"id": registry_page_id}]}
+                    },
+                )
+                console.print(
+                    f"[green][BUILD][/green] Linked build row → Registry ({registry_page_id[:8]}...)."
+                )
+            except Exception as exc:
+                console.print(f"[yellow][BUILD] Warning — could not set Resulting MCP relation: {exc}[/yellow]")
     else:
         error = data.get("error", "Unknown error returned by FusionAL")
         _fail_build(notion, page_id, error)
@@ -329,10 +355,20 @@ def _check_server(notion: NotionClient, http: httpx.Client, page: dict) -> None:
         )
 
         if count >= FAILURE_THRESHOLD:
+            # Fix 2: only open a new incident if none recently opened for this server
+            now = time.time()
+            last = last_incident_time.get(page_id, 0)
+            if now - last < INCIDENT_REOPEN_INTERVAL:
+                console.print(
+                    f"[dim yellow][INCIDENT] {name} still down but within reopen window "
+                    f"({int((INCIDENT_REOPEN_INTERVAL - (now - last)) / 60)}m remaining) — skipping.[/dim yellow]"
+                )
+                return
             console.print(
                 f"[bold red][INCIDENT][/bold red] {name} exceeded failure threshold — creating incident."
             )
             failure_counts[page_id] = 0  # reset so we don't spam incidents
+            last_incident_time[page_id] = now
             try:
                 notion_call(
                     notion.pages.update,
@@ -343,7 +379,7 @@ def _check_server(notion: NotionClient, http: httpx.Client, page: dict) -> None:
                     f"Health check failed {count} consecutive times "
                     f"(port {port} unreachable or returning errors)"
                 )
-                notion_call(
+                incident_page = notion_call(
                     notion.pages.create,
                     parent={"database_id": INCIDENT_LOG_ID},
                     properties={
@@ -354,9 +390,69 @@ def _check_server(notion: NotionClient, http: httpx.Client, page: dict) -> None:
                         "Notes": {"rich_text": [{"text": {"content": ""}}]},
                     },
                 )
+                incident_page_id = incident_page["id"]
                 console.print(f"[red][INCIDENT][/red] Incident opened for [bold]{name}[/bold].")
+
+                # Link Incident → Registry via "Related Server" relation
+                # (auto-populates 🚨 Incidents rollup on the Registry side)
+                registry_page_id = _get_registry_page_id(notion, name)
+                if registry_page_id:
+                    notion_call(
+                        notion.pages.update,
+                        page_id=incident_page_id,
+                        properties={
+                            "Related Server": {"relation": [{"id": registry_page_id}]}
+                        },
+                    )
+                    console.print(
+                        f"[red][INCIDENT][/red] Linked incident → Registry ({registry_page_id[:8]}...). "
+                        f"Incident Count rollup will update automatically."
+                    )
+                else:
+                    console.print(
+                        f"[dim yellow][INCIDENT] No Registry entry found for '{name}' "
+                        f"— Related Server relation not set.[/dim yellow]"
+                    )
             except Exception as exc:
                 console.print(f"[red][INCIDENT] Failed to create incident: {exc}[/red]")
+
+
+def _get_registry_page_id(notion: NotionClient, server_name: str) -> Optional[str]:
+    """Return Registry page_id for server_name. Hits cache first, falls back to API."""
+    if server_name in registry_id_cache:
+        return registry_id_cache[server_name]
+    try:
+        result = notion_call(
+            notion.databases.query,
+            database_id=REGISTRY_ID,
+            filter={"property": "Name", "title": {"equals": server_name}},
+            page_size=1,
+        )
+        pages = result.get("results", [])
+        if pages:
+            registry_id_cache[server_name] = pages[0]["id"]
+            return pages[0]["id"]
+        return None
+    except Exception as exc:
+        console.print(f"[dim yellow][BUILD] Could not look up Registry page for '{server_name}': {exc}[/dim yellow]")
+        return None
+
+
+def _warm_registry_cache(notion: NotionClient) -> None:
+    """Populate registry_id_cache at startup — one API call, zero per-incident lookups."""
+    console.print("[HEALTH] Warming registry ID cache...")
+    try:
+        result = notion_call(
+            notion.databases.query,
+            database_id=REGISTRY_ID,
+        )
+        for page in result.get("results", []):
+            name = get_title_text(page)
+            if name:
+                registry_id_cache[name] = page["id"]
+        console.print(f"[dim][HEALTH] Cache warmed: {len(registry_id_cache)} servers indexed.[/dim]")
+    except Exception as exc:
+        console.print(f"[yellow][HEALTH] Warning — could not warm registry cache: {exc}[/yellow]")
 
 
 def _auto_resolve_incidents(notion: NotionClient, server_name: str) -> None:
@@ -491,6 +587,7 @@ def main() -> None:
 
     with httpx.Client() as http:
         check_fusional_health(http)
+        _warm_registry_cache(notion)
         recover_interrupted_builds(notion)
 
         console.print(

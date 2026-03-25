@@ -5,7 +5,7 @@ Thanks for your interest in improving FusionAL.
 ## Development Setup
 
 1. Clone and enter the repo:
-   - `git clone https://github.com/JonathanMelton-FusionAL/FusionAL.git`
+   - `git clone https://github.com/JRM-FusionAL/FusionAL.git`
    - `cd FusionAL`
 2. Create a virtual environment:
    - Windows: `python -m venv venv && .\venv\Scripts\activate`

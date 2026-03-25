@@ -62,7 +62,7 @@ If you need implementation support, see **[fusional.dev](https://fusional.dev)**
 ### Step 1: Clone & Setup
 
 ```bash
-git clone https://github.com/JonathanMelton-FusionAL/FusionAL.git
+git clone https://github.com/JRM-FusionAL/FusionAL.git
 cd FusionAL
 
 # Create virtual environment
@@ -406,7 +406,7 @@ MIT License - see [LICENSE](LICENSE)
 
 ## ☕ Support
 
-- 🐛 Found a bug? [Open an issue](https://github.com/JonathanMelton-FusionAL/FusionAL/issues)
+- 🐛 Found a bug? [Open an issue](https://github.com/JRM-FusionAL/FusionAL/issues)
 - 💡 Have an idea? Submit a discussion
 - ⭐ Like it? Star the repo!
 

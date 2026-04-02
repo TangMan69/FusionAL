@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 log = logging.getLogger("action_executor")
 
 LOG_DIR = Path(__file__).parent.parent / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 EXEC_LOG = LOG_DIR / "execution_log.json"
 
 # ─────────────────────────────────────────────

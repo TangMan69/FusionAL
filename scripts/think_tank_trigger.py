@@ -25,6 +25,7 @@ import notion_reporter as reporter
 log = logging.getLogger("think_tank")
 
 LOG_DIR = Path(__file__).parent.parent / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 TT_LOG = LOG_DIR / "think_tank_log.json"
 FAULT_LOG = LOG_DIR / "fault_log.json"
 

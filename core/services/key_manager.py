@@ -34,14 +34,35 @@ DB_PATH = os.getenv("FUSIONAL_KEYS_DB", "/data/fusional/keys.db")
 AUDIT_LOG_PATH = os.getenv("FUSIONAL_AUDIT_LOG", "/data/fusional/audit.log")
 KEY_PREFIX = "fal_"   # FusionAL key prefix — makes keys identifiable in logs
 
+# Server-side pepper for scrypt — set FUSIONAL_KEY_PEPPER in production.
+# All keys must be re-issued if this value changes.
+_PEPPER = os.getenv("FUSIONAL_KEY_PEPPER", "fusional-dev-pepper").encode()
+# scrypt cost parameters — tune via env vars for the deployment hardware.
+# n=2**14, r=8, p=1 is the OWASP interactive-login minimum.
+_SCRYPT_N = int(os.getenv("FUSIONAL_SCRYPT_N", "16384"))
+_SCRYPT_R = int(os.getenv("FUSIONAL_SCRYPT_R", "8"))
+_SCRYPT_P = int(os.getenv("FUSIONAL_SCRYPT_P", "1"))
+
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
 def _hash(raw_key: str) -> str:
-    """SHA-256 hash of a raw key. Only this value is persisted."""
-    return hashlib.sha256(raw_key.encode()).hexdigest()
+    """scrypt-derived hash of a raw key with a server-side pepper.
+
+    Uses a fixed pepper so the output is deterministic for DB lookups.
+    Production deployments must set FUSIONAL_KEY_PEPPER to a strong random
+    value. Note: high-volume gateways should cache validated key hashes
+    in-memory (with a short TTL) to avoid scrypt overhead on every request.
+    """
+    return hashlib.scrypt(
+        raw_key.encode(),
+        salt=_PEPPER,
+        n=_SCRYPT_N,
+        r=_SCRYPT_R,
+        p=_SCRYPT_P,
+    ).hex()
 
 
 def _get_conn() -> sqlite3.Connection:

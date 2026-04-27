@@ -84,6 +84,9 @@ try:
 except Exception:
     run_in_docker = None
 
+# --- Policy profiles ---
+from .policy_profiles import log_active_profile
+
 # --- MCP transport ---
 from .mcp_transport import mcp
 from .ai_agent import generate_python_from_claude, generate_python_from_openai
@@ -91,6 +94,7 @@ from .ai_agent import generate_python_from_claude, generate_python_from_openai
 
 @asynccontextmanager
 async def _lifespan(app):
+    app.state.policy = log_active_profile()
     app.state._mcp_session_context = mcp.session_manager.run()
     await app.state._mcp_session_context.__aenter__()
     yield
@@ -288,13 +292,32 @@ if __name__ == "__main__":
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "FusionAL MCP Server", "security_enabled": _SECURITY_ENABLED, "timestamp": datetime.utcnow().isoformat()}
+    policy = getattr(app.state, "policy", None)
+    return {
+        "status": "ok",
+        "service": "FusionAL MCP Server",
+        "security_enabled": _SECURITY_ENABLED,
+        "policy_profile": policy.name if policy else "unknown",
+        "timestamp": datetime.utcnow().isoformat(),
+    }
 
 
 @app.post("/execute")
 async def execute(req: ExecRequest, _auth_dep=Depends(_auth), _rate_dep=Depends(_rate)):
     if req.language != "python":
         raise HTTPException(status_code=400, detail="Only 'python' language supported")
+
+    policy = getattr(app.state, "policy", None)
+    if policy is not None:
+        if policy.require_docker and not req.use_docker:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Policy profile '{policy.name}' requires Docker sandboxing. Set use_docker=true.",
+            )
+        req = req.model_copy(update={
+            "timeout": min(req.timeout, policy.max_timeout_seconds),
+            "memory_mb": min(req.memory_mb or policy.max_memory_mb, policy.max_memory_mb),
+        })
 
     if req.use_docker:
         if run_in_docker is None:
@@ -337,6 +360,10 @@ async def catalog():
 
 @app.post("/generate")
 async def generate(req: GenerateRequest, _auth_dep=Depends(_auth), _rate_dep=Depends(_rate)):
+    policy = getattr(app.state, "policy", None)
+    if policy is not None and policy.force_sandbox and not req.sandbox:
+        req = req.model_copy(update={"sandbox": True})
+
     try:
         server_name = _slugify_server_name(req.prompt)
         if server_name in REGISTRY:

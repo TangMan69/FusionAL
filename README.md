@@ -4,7 +4,7 @@
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)
 ![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-orange)
-![Smithery URL](https://smithery.ai/servers/jrm-fusional/fusional)
+[![smithery badge](https://smithery.ai/badge/jrm-fusional/fusional)](https://smithery.ai/servers/jrm-fusional/fusional)
 
 > **Your team connected 10 MCP servers. Now what?**  
 > 🌐 [fusional.dev](https://fusional.dev) • 📧 [jonathanmelton.fusional@gmail.com](mailto:jonathanmelton.fusional@gmail.com) • 🗓️ [Book a Call](https://calendly.com/jonathanmelton004/30min)

@@ -65,3 +65,21 @@ Branch: dependency-update-20260828020541 pushed. PR #105 created: https://github
 CI: 3 checks queued/in-progress (Analyze JS/Actions/Python). Awaiting pass before merge.
 Labels: 0 open issues without labels (nothing to tag).
 ---
+
+## Maintenance Run: 2026-09-06 02:13:49
+Outdated dependencies found: 5 packages (anyio 4.15.0→4.15.1, sse-starlette 3.4.10→3.4.11). Protected: mcp==1.28.1, pydantic_core==2.46.4 preserved per SI-111 guard.
+Created branch: dependency-update-20260906021437
+Opened PR #110: https://github.com/JRM-FusionAL/FusionAL/pull/110
+CI: FAILED on pre-existing Ruff lint errors (RUF013, BLE001, DTZ003, B008, SIM117) in core/main.py, core/mcp_transport.py, core/ai_agent.py — unrelated to dependency updates. CodeQL + Notify passed.
+Merged: skipped (CI failure is pre-existing lint debt, not caused by anyio/sse-starlette bump)
+Issues labeled: none (0 open unlabeled issues)
+---
+
+## Maintenance Run: 2026-09-06 02:13:49
+Outdated dependencies found: 5 packages (anyio 4.15.0→4.15.1, sse-starlette 3.4.10→3.4.11). Protected: mcp==1.28.1, pydantic_core==2.46.4 preserved per SI-111 guard.
+Created branch: dependency-update-20260906021437
+Opened PR #110: https://github.com/JRM-FusionAL/FusionAL/pull/110
+CI: FAILED on pre-existing Ruff lint errors (RUF013, BLE001, DTZ003, B008, SIM117) in core/main.py, core/mcp_transport.py, core/ai_agent.py — unrelated to dependency updates. CodeQL + Notify passed.
+Merged: skipped (CI failure is pre-existing lint debt, not caused by anyio/sse-starlette bump)
+Issues labeled: none (0 open unlabeled issues)
+---
